@@ -33,16 +33,7 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
  */
 public class ServicioDocx {
   public void guardarDocx(JTextPane editor, List<String[][]> listaTablasExtra, File archivo) throws IOException  {
-     XWPFDocument documentoPoi = new XWPFDocument();
-     StyledDocument docSwing = editor.getStyledDocument();
-     Element raiz = docSwing.getDefaultRootElement();
-     
-     for(int control = 0; control < raiz.getElementCount(); control++){
-         Element parrafo = raiz.getElement(control);
-         int inicio = parrafo.getStartOffset();
-         int fin = parrafo.getEndOffset();
-         
-         String texto
+   XWPFd
      }
      
   }

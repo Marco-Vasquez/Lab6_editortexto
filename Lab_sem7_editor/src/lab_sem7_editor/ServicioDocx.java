@@ -33,8 +33,96 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTRPr;
  */
 public class ServicioDocx {
   public void guardarDocx(JTextPane editor, List<String[][]> listaTablasExtra, File archivo) throws IOException  {
-   XWPFd
-     }
+   XWPFDocument documentoPoi = new XWPFDocument();
+   StyledDocument docSwing = editor.getStyledDocument();
+   Element raiz = docSwing.getDefaultRootElement();
+   
+   for (int control = 0; control < raiz.getElementCount(); control++){
+       Element parrafo = raiz.getElement(control);
+       int inicio = parrafo.getStartOffset();
+       int fin = parrafo.getEndOffset();
+       
+       String textoParrafo = "";
+       try {
+           textoParrafo = docSwing.getText(inicio, fin-inicio);
+           
+       }catch (BadLocationException e){
+           textoParrafo = "";
+       }
+       
+       if(textoParrafo.endsWith("/n")){
+           textoParrafo = textoParrafo.substring(0, textoParrafo.length() - 1);
+       }
+       
+       XWPFParagraph parrafoPoi = documentoPoi.createParagraph();
+       int cursor = inicio;
+       
+       while(cursor < fin){
+           Element elementoChar = docSwing.getCharacterElement(cursor);
+           int runInicio = Math.max(cursor, elementoChar.getStartOffset());
+           int runFin = Math.min(fin, elementoChar.getEndOffset());
+           if (runFin <= runInicio) break;
+           
+           String textoRun = "";
+           try { 
+               textoRun = docSwing.getText(runInicio, runFin - runInicio);
+           }catch (BadLocationException e){
+               textoRun = "";
+               
+           }
+           
+           if(textoRun.endsWith("/n"))
+               textoRun = textoRun.substring(0,textoRun.length() - 1);
+           
+             if (!textoRun.isEmpty()) {
+                    EstiloTexto estilo = leerEstiloSwing(elementoChar.getAttributes());
+                    XWPFRun runPoi = parrafoPoi.createRun();
+                    aplicarEstiloARun(runPoi, estilo, textoRun);
+                }
+                cursor = runFin;
+            }
+        }
+
+        for (String[][] datosTabla : listaTablasExtra) {
+            guardarTablaEnDocumento(documentoPoi, datosTabla);
+        }
+
+        try (FileOutputStream salida = new FileOutputStream(archivo)) {
+            documentoPoi.write(salida);
+        }
+        documentoPoi.close();
+    }
+           
+       private void aplicarEstiloARun(XWPFRun runPoi, EstiloTexto estilo, String texto) {
+        runPoi.setText(texto);
+        runPoi.setFontFamily(estilo.getFuente());
+        runPoi.setFontSize(estilo.getTamanoPt());
+        runPoi.setBold(estilo.isNegrita());
+        runPoi.setItalic(estilo.isCursiva());
+        runPoi.setUnderline(
+            estilo.isSubrayado()
+                ? org.apache.poi.xwpf.usermodel.UnderlinePatterns.SINGLE
+                : org.apache.poi.xwpf.usermodel.UnderlinePatterns.NONE
+        );
+
+        CTRPr propiedadesRun = runPoi.getCTR().isSetRPr()
+                ? runPoi.getCTR().getRPr()
+                : runPoi.getCTR().addNewRPr();
+        CTColor colorPoi = propiedadesRun.isSetColor()
+                ? propiedadesRun.getColor()
+                : propiedadesRun.addNewColor();
+        colorPoi.setVal(estilo.colorComoTexto());
+    }    
+           
+           
+       }
+       
+       
+       
+       
+   
+   
      
-  }
-}
+     
+  
+

@@ -119,6 +119,12 @@ public class DialogoTabla extends JDialog{
         DialogoTabla dialogo=new DialogoTabla(padre);
         dialogo.setVisible(true);
         if (!dialogo.aceptado) return null;
-        return dialogo.obtenerDatos();
+        String[][] datos=dialogo.obtenerDatos();
+        for (String[] fila:datos) {
+            for (String celda:fila) {
+                if (!celda.trim().isEmpty()) return datos;
+            }
+        }
+        return datos; 
     }
 }
